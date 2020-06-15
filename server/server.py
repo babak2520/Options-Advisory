@@ -26,14 +26,17 @@ except OSError:
     print(OSError)
     pass
 
+
 @server.route('/index')
 def hello_flask():
     return ' YOLOOO!'
 
+
 @socketio.on('connect')
 def test_connect():
     print('Client connected')
-    emit('my response', {'data': 'Connected'})
+    socketio.emit('my response', {'data': 'Connected'})
+
 
 @socketio.on('disconnect')
 def test_disconnect():
@@ -45,7 +48,14 @@ def client_send_message(data):
     print('client sent message!!!!!!!!!!!!!!!')
     print(data)
     print('emittingggggggggggggggggggggggggggggg')
-    emit('update_on_layouts', {'data': 'Server generated event'})
+    socketio.emit('bunelan', {'data': 'Server generated event'})
+
+
+@socketio.on('ping')
+def pongResponse():
+    print('tenis oynuyorum')
+    socketio.emit('pong')
+
 
 if __name__ == ' __main__':
     socketio.run(host='0.0.0.0', debug=True, port=8050)

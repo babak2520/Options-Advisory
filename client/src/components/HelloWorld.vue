@@ -102,18 +102,8 @@
 
 
 <script>
-    import Vue from 'vue'
-    import VueSocketIO from 'vue-socket.io'
-    import SocketIO from "socket.io-client"
 
-
-    Vue.use(new VueSocketIO({
-            debug: true,
-            connection: SocketIO('http://localhost:8050/'), //options object is Optional
-        })
-    );
-    // const io = require('socket.io-client');
-    import io from 'socket.io-client'
+    const io = require('socket.io-client');
 
     export default {
         name: 'HelloWorld',
@@ -174,9 +164,10 @@
         methods: {
 
             sendMessage(e) {
+                var socket = io.connect('localhost:8050');
 
                 console.log(e)
-                this.$socket.emit('SEND_MESSAGE', {
+                socket.emit('SEND_MESSAGE', {
                     msg: this.message
                 });
                 console.log('message sent to websocket server');
@@ -184,58 +175,31 @@
             },
         },
 
-        created() {
-            // test websocket connection
-            const socket = io.connect('http://localhost:8050/');
-
-            // getting data from server
-            // eslint-disable-next-line
+        created: function () {
+            var socket = io.connect('localhost:8050');
             socket.on('connect', function () {
-                console.log('connected to webSocket');
-                //sending to server
-                socket.emit('my event', {data: 'I\'m connected!'});
-            });
-
-            // we have to use the arrow function to bind this in the function
-            // so that we can access Vue  & its methods
-            socket.on('update_on_layouts', (data) => {
-                console.log(data);
-            });
+                socket.emit('first-connect', 'A user has connected');
+            })
+            setInterval(function () {
+                socket.emit('ping', {
+                    msg: this.message
+                });
+                console.log('is the session alive ?')
+            }, 10000);
+            socket.on('pong', function () {
+                console.log('session is alive')
+            })
+            socket.on('bunelan', function () {
+                console.log('IT CAME BACK TO THE CLIENT FROM THE SERVER')
+            })
+            // socket.on('data-arrived', function (data) {
+            //     this.societes = data;
+            //     console.log(this.societes);
+            //     Event.fire('code1')
+            // }.bind(this))
+            // Event.listen('code', function (code) {
+            //     this.sendCodeToSociete(code)
+            // }.bind(this));
         },
-
-
-        // mounted: function () {
-        //     var socket = io('http://localhost:8050/');
-        //     socket.on('heyhey', function () {
-        //         console.log('COMING FROM THE SERVER')
-        //         socket.emit('first-connect', 'A user has connected');
-        //     })
-        // },
-
-
-        //
-        // mounted() {
-        //     this.io.on('message', (socket) => {
-        //         console.log('COMING FROM THE SERVER')
-        //         this.messages = JSON.parse(socket);
-        //         console.log(JSON.parse(socket))
-        //     })
-        // }
-
-        //
-        // this.socket.on('message__', function () {
-        //     console.log('THIS IS COMING FROM THE SERVER')
-        //     this.socket.emit('first-connect', 'A user has connected');
-        // })
-
-
-        // {
-        //     console.log('THIS IS COMING FROM THE SERVER')
-        //     this.messages = JSON.parse(socket);
-        //     console.log(JSON.parse(socket))
-        // })
-        // },
-
-
     }
 </script>
