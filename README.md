@@ -1,5 +1,5 @@
 
-# Backend
+# Server
 ## Add requirements
 `pip install -r requirements.txt`
 

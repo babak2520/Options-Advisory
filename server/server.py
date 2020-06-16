@@ -9,7 +9,6 @@ server = Flask(__name__)
 server.config.from_mapping(
     SECRET_KEY='dev',
     SESSION_REFRESH_EACH_REQUEST=False,
-    # TEMPLATES_AUTO_RELOAD=True,
     SESSION_TYPE='filesystem',
     CORS_HEADERS='Content-Type',
     TESTING=True
@@ -29,31 +28,17 @@ except OSError:
 
 @server.route('/index')
 def hello_flask():
-    return ' YOLOOO!'
-
-
-@socketio.on('connect')
-def test_connect():
-    print('Client connected')
-    socketio.emit('my response', {'data': 'Connected'})
-
-
-@socketio.on('disconnect')
-def test_disconnect():
-    print('Client disconnected')
+    return ' Hello Flask!'
 
 
 @socketio.on('SEND_MESSAGE')
 def client_send_message(data):
-    print('client sent message!!!!!!!!!!!!!!!')
-    print(data)
-    print('emittingggggggggggggggggggggggggggggg')
-    socketio.emit('bunelan', {'data': 'Server generated event'})
+    print('client sent message to the server!')
+    socketio.emit('message_to_client', {'data': 'you received this message from the server'})
 
 
 @socketio.on('ping')
 def pongResponse():
-    print('tenis oynuyorum')
     socketio.emit('pong')
 
 
