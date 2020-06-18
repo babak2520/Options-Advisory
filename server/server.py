@@ -42,5 +42,10 @@ def pongResponse():
     socketio.emit('pong')
 
 
+def emit_plot_data():
+    data = 123  # preparing the data in dictionary format maybe needed to convert to json, I dont know yet.
+    socketio.emit('plot_data_from_server', data)
+
+
 if __name__ == ' __main__':
     socketio.run(host='0.0.0.0', debug=True, port=8050)
