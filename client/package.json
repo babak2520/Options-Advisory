@@ -10,12 +10,15 @@
   "dependencies": {
     "apexcharts": "^3.19.2",
     "core-js": "^3.6.5",
+    "luxon": "^1.24.1",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
     "vue": "^2.6.11",
     "vue-apexcharts": "^1.5.3",
+    "vue-datetime": "^1.0.0-beta.13",
     "vue-socket.io": "^3.0.9",
-    "vuetify": "^2.3.2"
+    "vuetify": "^2.3.0",
+    "weekstart": "^1.0.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.4.0",
