@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, url_for, jsonify, session
 import json
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+import pandas as pd
 
 # create and configure the server
 server = Flask(__name__)
@@ -40,6 +41,18 @@ def client_send_message(data):
 @socketio.on('ping')
 def pongResponse():
     socketio.emit('pong')
+
+
+@socketio.on('client_gives_form_data')
+def get_form_data(d):
+    data = d['data']
+    projection_date = pd.to_datetime(data['desired_projection_date'], infer_datetime_format=True,
+                                     errors='coerce',
+                                     format='%Y-%m-%d %H:%M:%S')
+    lookback = data['lookback']
+    stock = data['stock']
+    print(projection_date, lookback, stock)
+    ##ToDo do some calculation pass the result to the client
 
 
 def emit_plot_data():
