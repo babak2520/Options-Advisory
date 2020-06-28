@@ -38,20 +38,3 @@ def predict_stock_price(df, desired_projection_date, trained_model_path, lookbac
 
 
 
-trained_model_path = 'trained models/EOG.h5'
-
-# I want lookback to come from the client in a text field and for it to be between 1 to 1000.
-lookback = 200
-
-# This would be the second entry and would be nice if it had a calendar datetime picker on it.
-desired_projection_date = pd.Timestamp(year=2020, month=10, day=1)
-historical_data_path = 'Data/EOG.csv'
-
-df = pd.read_csv(historical_data_path, usecols = ['Date', 'Close'])
-df['Date'] = pd.to_datetime(df['Date'])
-df.set_index('Date', inplace = True)
-
-
-
-df = predict_stock_price(df, desired_projection_date, trained_model_path, lookback)
-
