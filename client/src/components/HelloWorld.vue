@@ -17,26 +17,99 @@
             </v-col>
         </v-row>
 
-        <v-col sm="6">
-            <div id="chart">
-                <apexchart type="area" height="350" :options="chartOptions" :series="series"></apexchart>
-            </div>
-        </v-col>
+        <div class="example">
+
+            <v-col sm2="sm2">
+                <v-card ref="form">
+                    <v-card-text>
+
+                        <v-autocomplete
+                                ref="stock"
+                                v-model="stock"
+                                :rules="[() => !!stock || 'This field is required']"
+                                :items="stocks"
+                                label="Stock"
+                                placeholder="Select..."
+                                required
+                        ></v-autocomplete>
+
+                        <label class="typo__label"><font color='black'>Choose desired projection
+                            date/time</font></label>
+                        <v-input id="desired projection date" type="text" class="vdatetime-input-end" dark>
+                            <datetime type="datetime" ref="desired_projection_date" v-model="desired_projection_date"
+                                      format="yyyy-MM-dd HH:mm:ss"
+                                      auto
+                                      class="theme-orange"></datetime>
+                        </v-input>
+
+                        <v-text-field :rules="rules"
+                                      label="Enter the lookback amount"
+                                      placeholder="i.e. 200"
+                                      ref="lookback"
+                                      v-model="lookback"
+                        ></v-text-field>
+
+
+                    </v-card-text>
+                    <v-divider class="mt-12"></v-divider>
+                    <v-card-actions>
+                        <v-btn text>Cancel</v-btn>
+                        <v-spacer></v-spacer>
+                        <v-slide-x-reverse-transition>
+
+                        </v-slide-x-reverse-transition>
+
+
+                        <v-btn variant="success" @click="submit">Estimate the Projection</v-btn>
+
+
+                    </v-card-actions>
+                </v-card>
+            </v-col>
+
+            <v-col sm="8">
+                <div id="chart">
+                    <apexchart type="area" height="350" :options="chartOptions" :series="series"></apexchart>
+                </div>
+            </v-col>
+
+        </div>
 
     </v-main>
 </template>
+<style src="../assets/css/datetimepicker_costum.css"></style>
 
 <script>
     const io = require('socket.io-client');
     import VueApexCharts from 'vue-apexcharts'
+    import Vue from 'vue'
+    import {Datetime} from 'vue-datetime'
+    // You need a specific loader for CSS files
+    import 'vue-datetime/dist/vue-datetime.css'
+
+    Vue.use(Datetime)
 
     export default {
         name: 'HelloWorld',
         components: {
             apexchart: VueApexCharts,
+            datetime: Datetime,
         },
         data() {
             return {
+                stock: null,
+                stocks: ['EOG', 'SLB'],
+                formHasErrors: false,
+                desired_projection_date: null,
+                lookback: null,
+
+                rules: [
+                    value => !!value || 'Required.',
+                    value => (value || '').length <= 20 || 'Max 20 characters',
+                    value => value < 1000 || 'Value needs to be below 1000',
+                    value => value > 0 || 'Value needs to be above 0'
+                ],
+
                 alignment: 'center',
                 justify: 'center',
                 item:
@@ -106,7 +179,44 @@
             }
         },
 
+        computed: {
+            form() {
+                return {
+                    stock: this.stock,
+                    desired_projection_date: this.desired_projection_date,
+                    lookback: this.lookback,
+                }
+            },
+        },
+
         methods: {
+            // ToDo, make th reset button work
+            // resetForm() {
+            //     this.errorMessages = []
+            //     this.formHasErrors = false
+            //
+            //     Object.keys(this.form).forEach(f => {
+            //         this.$refs[f].reset()
+            //     })
+            // },
+            submit() {
+                var socket = io.connect('localhost:8050');
+                this.formHasErrors = false
+                Object.keys(this.form).forEach(f => {
+                    if (!this.form[f]) {
+                        this.formHasErrors = true
+                        alert('Please fill the form with correct information')
+                    }
+                },)
+                // if the form checks out, submit the data
+                if (!this.formHasErrors) {
+                    console.log(this.form)
+                    socket.emit('client_gives_form_data', {
+                        data: this.form
+                    });
+                }
+            },
+
             sendMessage(e) {
                 var socket = io.connect('localhost:8050');
 
@@ -135,19 +245,6 @@
 
         },
 
-        created: function () {
-            var socket = io.connect('localhost:8050');
-            setInterval(function () {
-                socket.emit('ping', {
-                    msg: this.message
-                });
-                console.log('is the session alive ?')
-            }, 10000);
-            socket.on('pong', function () {
-                console.log('session is alive')
-            })
-
-        },
         mounted: function () {
             let self = this
             var socket = io.connect('localhost:8050');
@@ -156,9 +253,7 @@
                 },
             )
             socket.on('plot_data_from_server', function (data) {
-
                     console.log(data)
-
                 },
             )
 

@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, url_for, jsonify, session
 import json
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+import pandas as pd
 
 
 # create and configure the server
@@ -44,8 +45,7 @@ def pongResponse():
     socketio.emit('pong')
 
 
-<<<<<<< Updated upstream
-=======
+
 @socketio.on('client_gives_form_data')
 def get_form_data(d):
     data = d['data']
@@ -54,6 +54,11 @@ def get_form_data(d):
                                      format='%Y-%m-%d %H:%M:%S')
     lookback = data['lookback']
     stock = data['stock']
+
+    print(projection_date, lookback, stock)
+    ##ToDo do some calculation pass the result to the client
+
+
     print("here is the passed data")
     print(projection_date, lookback, stock)
     ##ToDo do some calculation pass the result to the client
@@ -74,8 +79,6 @@ def get_form_data(d):
 
 
 
-
->>>>>>> Stashed changes
 def emit_plot_data():
     data = 123  # preparing the data in dictionary format maybe needed to convert to json, I dont know yet.
     socketio.emit('plot_data_from_server', data)
