@@ -1,11 +1,10 @@
-from RunPretrainedModel import predict_stock_price
+from server.RunPretrainedModel import predict_stock_price
 import os
 from flask import Flask, render_template, request, url_for, jsonify, session
 import json
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import pandas as pd
-
 
 # create and configure the server
 server = Flask(__name__)
@@ -45,7 +44,6 @@ def pongResponse():
     socketio.emit('pong')
 
 
-
 @socketio.on('client_gives_form_data')
 def get_form_data(d):
     data = d['data']
@@ -55,10 +53,6 @@ def get_form_data(d):
     lookback = data['lookback']
     stock = data['stock']
 
-    print(projection_date, lookback, stock)
-    ##ToDo do some calculation pass the result to the client
-
-
     print("here is the passed data")
     print(projection_date, lookback, stock)
     ##ToDo do some calculation pass the result to the client
@@ -66,17 +60,13 @@ def get_form_data(d):
 
     historical_data_path = 'Data/EOG.csv'
 
-    df = pd.read_csv(historical_data_path, usecols = ['Date', 'Close'])
+    df = pd.read_csv(historical_data_path, usecols=['Date', 'Close'])
     df['Date'] = pd.to_datetime(df['Date'])
-    df.set_index('Date', inplace = True)
-
+    df.set_index('Date', inplace=True)
 
     df = predict_stock_price(df, projection_date, trained_model_path, lookback)
     socketio.emit('predicted_data_raw', {'data': df})
     print('tried emitting following data: {}'.format(df.head()))
-
-
-
 
 
 def emit_plot_data():
