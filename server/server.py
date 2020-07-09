@@ -50,7 +50,7 @@ def get_form_data(d):
     projection_date = pd.to_datetime(data['desired_projection_date'], infer_datetime_format=True,
                                      errors='coerce',
                                      format='%Y-%m-%d %H:%M:%S')
-    lookback = data['lookback']
+    lookback = int(data['lookback'])
     stock = data['stock']
 
     print("here is the passed data")
@@ -61,17 +61,21 @@ def get_form_data(d):
     historical_data_path = 'Data/EOG.csv'
 
     df = pd.read_csv(historical_data_path, usecols=['Date', 'Close'])
-    df['Date'] = pd.to_datetime(df['Date'])
-    df.set_index('Date', inplace=True)
+    #df['Date'] = pd.to_datetime(df['Date'])
+    #df.set_index('Date', inplace=True)
 
     df = predict_stock_price(df, projection_date, trained_model_path, lookback)
-    socketio.emit('predicted_data_raw', {'data': df})
-    print('tried emitting following data: {}'.format(df.head()))
+    socketio.emit('plot_data_from_server', {'data': df.to_json()})
+    print('tried emitting following data: {}'.format(df))
 
 
-def emit_plot_data():
-    data = 123  # preparing the data in dictionary format maybe needed to convert to json, I dont know yet.
-    socketio.emit('plot_data_from_server', data)
+
+        # jsonfiles = json.loads(json.dumps(dict_to_update))
+        # return jsonify(jsonfiles)
+
+#def emit_plot_data():
+#    data = 123  # preparing the data in dictionary format maybe needed to convert to json, I dont know yet.
+#    socketio.emit('plot_data_from_server', data)
 
 
 if __name__ == ' __main__':

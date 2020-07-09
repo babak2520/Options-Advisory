@@ -34,12 +34,12 @@
                         ></v-autocomplete>
 
                         <label class="typo__label"><font color='black'>Choose desired projection
-                            date/time</font></label>
+                            date</font></label>
                         <v-input id="desired projection date" type="text" class="vdatetime-input-end" dark>
-                            <datetime type="datetime" ref="desired_projection_date" v-model="desired_projection_date"
-                                      format="yyyy-MM-dd HH:mm:ss"
+                            <date-pick type="date" ref="desired_projection_date" v-model="desired_projection_date"
+                                      format="'YYYY.MM.DD'"
                                       auto
-                                      class="theme-orange"></datetime>
+                                      class="theme-orange"></date-pick>
                         </v-input>
 
                         <v-text-field :rules="rules"
@@ -47,6 +47,7 @@
                                       placeholder="i.e. 200"
                                       ref="lookback"
                                       v-model="lookback"
+                                      type="number" 
                         ></v-text-field>
 
 
@@ -77,23 +78,25 @@
 
     </v-main>
 </template>
-<style src="../assets/css/datetimepicker_costum.css"></style>
+<style src="../assets/css/vueDatePick.css"></style>
 
 <script>
     const io = require('socket.io-client');
     import VueApexCharts from 'vue-apexcharts'
-    import Vue from 'vue'
-    import {Datetime} from 'vue-datetime'
+    //import Vue from 'vue'
+    //import {Datetime} from 'vue-datetime'
     // You need a specific loader for CSS files
-    import 'vue-datetime/dist/vue-datetime.css'
+    //import 'vue-datetime/dist/vue-datetime.css'
+    import DatePick from 'vue-date-pick';
 
-    Vue.use(Datetime)
+    //Vue.use(Datetime)
+
 
     export default {
         name: 'HelloWorld',
         components: {
             apexchart: VueApexCharts,
-            datetime: Datetime,
+            DatePick,
         },
         data() {
             return {
@@ -117,8 +120,9 @@
                         name: "click button for server to send message",
                     },
                 series: [{
-                    name: 'XYZ MOTORS',
-                    data: this.generateDayWiseTimeSeries(0, 18)
+
+                    name: this.stock,
+                    data: this.generateDayWiseTimeSeries() ,
                 }],
                 chartOptions: {
                     chart: {
@@ -165,7 +169,7 @@
                         },
                     },
                     xaxis: {
-                        type: 'datetime',
+                        type: 'date',
                     },
                     tooltip: {
                         shared: false,
@@ -226,26 +230,32 @@
                 });
                 console.log('message sent to websocket server');
             },
-            generateDayWiseTimeSeries(s, count) {
-                var values = [[
-                    4, 3, 10, 9, 29, 19, 25, 9, 12, 7, 19, 5, 13, 9, 17, 2, 7, 5
-                ], [
-                    2, 3, 8, 7, 22, 16, 23, 7, 11, 5, 12, 5, 10, 4, 15, 2, 6, 2
-                ]];
-                var i = 0;
-                var series = [];
-                var x = new Date("11 Nov 2012").getTime();
-                while (i < count) {
-                    series.push([x, values[s][i]]);
-                    x += 86400000;
-                    i++;
-                }
+            //generateDayWiseTimeSeries(s, count) {
+                generateDayWiseTimeSeries() {
+                // var values = [[
+                //     4, 3, 10, 9, 29, 19, 25, 9, 12, 7, 19, 5, 13, 9, 17, 2, 7, 5
+                // ], [
+                //     2, 3, 8, 7, 22, 16, 23, 7, 11, 5, 12, 5, 10, 4, 15, 2, 6, 2
+                // ]];
+                // console.log("called generatedaywise function")
+                // var i = 0;
+                // var series = [];
+                // var x = new Date("11 Nov 2012").getTime();
+                // while (i < count) {
+                //     series.push([x, values[s][i]]);
+                //     x += 86400000;
+                //     i++;
+                // }
+                console.log("here is the data inside generate function:")
+                console.log(this.plot_data)
+                var series = this.plot_data
                 return series;
             }
 
         },
 
         mounted: function () {
+            //console.log("mounted function is called")
             let self = this
             var socket = io.connect('localhost:8050');
             socket.on('message_to_client', function (d) {
@@ -253,7 +263,44 @@
                 },
             )
             socket.on('plot_data_from_server', function (data) {
-                    console.log(data)
+                    console.log('this is the data to be plotted:')
+                    // console.log(data.data)
+                    // var dict = [];
+                    // dict = data.data['Close']
+                    for (var key in data.data){
+                        console.log(key, data.data[key])
+//                         for (var fuckthis in key){
+// console.log('hereee',fuckthis)
+//                         }
+                    }
+
+
+// axios.get(path).then(jsonfiles => {
+
+//           let results = jsonfiles.data
+//           let deptresult = results['DEPT']
+//           let hdthresult = results['HDTH']
+//           let datetimeresult = results['Date/Time']
+
+//           this.DEPT = JSON.parse(deptresult)
+//           this.HDTH = JSON.parse(hdthresult)
+//           this.datetime = JSON.parse(datetimeresult)
+//           var depths = [];
+//           var hdths = [];
+//           for (var i = 0; i < this.DEPT.length && i < this.HDTH.length; i++) {
+//             depths[i] = [(new Date(this.datetime[i])), this.DEPT[i]];
+//             hdths[i] = [(new Date(this.datetime[i])), this.HDTH[i]];
+//           }
+
+
+
+
+                    // for (var i = 0; i < this.channel.length; i++) {
+                    //     related_channel[i] = [(new Date(this.datetime_[i])), this.channel[i]];
+                    //   }
+                    //const obj = JSON.parse(data.data['Close']);
+                    //console.log(obj)
+
                 },
             )
 
