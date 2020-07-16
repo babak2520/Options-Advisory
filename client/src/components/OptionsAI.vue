@@ -17,12 +17,10 @@
             </v-col>
         </v-row>
 
-        <div class="example">
-
-            <v-col sm2="sm2">
+        <v-row class="example">
+            <v-col sm="4">
                 <v-card ref="form">
                     <v-card-text>
-
                         <v-autocomplete
                                 ref="stock"
                                 v-model="stock"
@@ -33,37 +31,27 @@
                                 required
                         ></v-autocomplete>
 
-                        <label class="typo__label"><font color='black'>Choose desired projection
-                            date</font></label>
-                        <v-input id="desired projection date" type="text" class="vdatetime-input-end" dark>
-                            <date-pick type="date" ref="desired_projection_date" v-model="desired_projection_date"
-                                      format="'YYYY.MM.DD'"
-                                      auto
-                                      class="theme-orange"></date-pick>
-                        </v-input>
+                        <label class="typo__label"><span class="label_span">Choose desired projection
+                            date</span></label>
+
+                        <date-pick type="date" ref="desired_projection_date" v-model="desired_projection_date"
+                                   :format="'MM/DD/YYYY'"></date-pick>
 
                         <v-text-field :rules="rules"
                                       label="Enter the lookback amount"
                                       placeholder="i.e. 200"
                                       ref="lookback"
                                       v-model="lookback"
-                                      type="number" 
+                                      type="number"
                         ></v-text-field>
-
-
                     </v-card-text>
                     <v-divider class="mt-12"></v-divider>
                     <v-card-actions>
                         <v-btn text>Cancel</v-btn>
                         <v-spacer></v-spacer>
                         <v-slide-x-reverse-transition>
-
                         </v-slide-x-reverse-transition>
-
-
                         <v-btn variant="success" @click="submit">Estimate the Projection</v-btn>
-
-
                     </v-card-actions>
                 </v-card>
             </v-col>
@@ -73,12 +61,11 @@
                     <apexchart type="area" height="350" :options="chartOptions" :series="series"></apexchart>
                 </div>
             </v-col>
-
-        </div>
-
+        </v-row>
     </v-main>
 </template>
 <style src="../assets/css/vueDatePick.css"></style>
+<style src="../assets/css/general.css"></style>
 
 <script>
     const io = require('socket.io-client');
@@ -88,9 +75,7 @@
     // You need a specific loader for CSS files
     //import 'vue-datetime/dist/vue-datetime.css'
     import DatePick from 'vue-date-pick';
-
     //Vue.use(Datetime)
-
 
     export default {
         name: 'HelloWorld',
@@ -105,7 +90,6 @@
                 formHasErrors: false,
                 desired_projection_date: null,
                 lookback: null,
-                // plotdata: [],
 
                 rules: [
                     value => !!value || 'Required.',
@@ -122,8 +106,8 @@
                     },
                 series: [{
 
-                    name: 'XYZ MOTORS',
-                    data: this.plotdata, 
+                    name: [],
+                    data: [],
 
                 }],
                 chartOptions: {
@@ -163,7 +147,7 @@
                     yaxis: {
                         labels: {
                             formatter: function (val) {
-                                return (val / 1000000).toFixed(0);
+                                return (val).toFixed(0);
                             },
                         },
                         title: {
@@ -177,7 +161,7 @@
                         shared: false,
                         y: {
                             formatter: function (val) {
-                                return (val / 1000000).toFixed(0)
+                                return (val).toFixed(0)
                             }
                         }
                     }
@@ -233,58 +217,48 @@
                 console.log('message sent to websocket server');
             },
 
-             generateDayWiseTimeSeries(s, count) {
-                var values = [[
-                    4, 3, 10, 9, 29, 19, 25, 9, 12, 7, 19, 5, 13, 9, 17, 2, 7, 5
-                ], [
-                    2, 3, 8, 7, 22, 16, 23, 7, 11, 5, 12, 5, 10, 4, 15, 2, 6, 2
-                ]];
-                var i = 0;
-                var series = [];
-                var x = new Date("11 Nov 2012").getTime();
-                while (i < count) {
-                    series.push([x, values[s][i]]);
-                    x += 86400000;
-                    i++;
-                }
-                console.log(series)
-                return series;
-            }
+            // generateDayWiseTimeSeries(s, count) {
+            //     var values = [[
+            //         4, 3, 10, 9, 29, 19, 25, 9, 12, 7, 19, 5, 13, 9, 17, 2, 7, 5
+            //     ], [
+            //         2, 3, 8, 7, 22, 16, 23, 7, 11, 5, 12, 5, 10, 4, 15, 2, 6, 2
+            //     ]];
+            //     var i = 0;
+            //     var series = [];
+            //     var x = new Date("11 Nov 2012").getTime();
+            //     while (i < count) {
+            //         series.push([x, values[s][i]]);
+            //         x += 86400000;
+            //         i++;
+            //     }
+            //     console.log(series)
+            //     return series;
+            // }
 
         },
 
-
-
-
-
         mounted: function () {
             let self = this
+
             var socket = io.connect('localhost:8050');
             socket.on('message_to_client', function (d) {
                     self.item['name'] = d["data"]
                 },
             )
             socket.on('plot_data_from_server', function (data) {
-                    console.log('inside mounted function socket.on')
-                    var parsedData = JSON.parse(data.data)
-                    this.plotdata =[]
-                    //console.log(parsedData)
+                    let parsedData = JSON.parse(data.data);
+                    console.log(parsedData)
+                    let store = [];
+                    let idx = 0
                     for (const [key, value] of Object.entries(parsedData)) {
                         let date = new Date(key).getTime()
-                        this.plotdata.push([date, value['Actual or Pred Close']])
+                        store[idx] = [date, value['Actual or Pred Close']]
+                        idx = idx + 1
                     }
-                    console.log(this.plotdata)
-
+                    this.series = [{name:this.stock, data: store}]
                 }.bind(this)
-                
             )
-            // this.plotdata = self.plotdata
-            // console.log('youre at the end of mounted block')
-            // console.log(this.plotdata)
         },
-
-
-
     }
-    
+
 </script>

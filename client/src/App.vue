@@ -7,7 +7,7 @@
 </template>
 
 <script>
-    import HelloWorld from './components/HelloWorld';
+    import HelloWorld from './components/OptionsAI';
 
     export default {
         name: 'App',
