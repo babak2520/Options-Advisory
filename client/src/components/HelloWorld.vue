@@ -105,6 +105,7 @@
                 formHasErrors: false,
                 desired_projection_date: null,
                 lookback: null,
+                // plotdata: [],
 
                 rules: [
                     value => !!value || 'Required.',
@@ -121,8 +122,9 @@
                     },
                 series: [{
 
-                    name: this.stock,
-                    data: this.generateDayWiseTimeSeries() ,
+                    name: 'XYZ MOTORS',
+                    data: this.plotdata, 
+
                 }],
                 chartOptions: {
                     chart: {
@@ -169,7 +171,7 @@
                         },
                     },
                     xaxis: {
-                        type: 'date',
+                        type: 'datetime',
                     },
                     tooltip: {
                         shared: false,
@@ -230,32 +232,32 @@
                 });
                 console.log('message sent to websocket server');
             },
-            //generateDayWiseTimeSeries(s, count) {
-                generateDayWiseTimeSeries() {
-                // var values = [[
-                //     4, 3, 10, 9, 29, 19, 25, 9, 12, 7, 19, 5, 13, 9, 17, 2, 7, 5
-                // ], [
-                //     2, 3, 8, 7, 22, 16, 23, 7, 11, 5, 12, 5, 10, 4, 15, 2, 6, 2
-                // ]];
-                // console.log("called generatedaywise function")
-                // var i = 0;
-                // var series = [];
-                // var x = new Date("11 Nov 2012").getTime();
-                // while (i < count) {
-                //     series.push([x, values[s][i]]);
-                //     x += 86400000;
-                //     i++;
-                // }
-                console.log("here is the data inside generate function:")
-                console.log(this.plot_data)
-                var series = this.plot_data
+
+             generateDayWiseTimeSeries(s, count) {
+                var values = [[
+                    4, 3, 10, 9, 29, 19, 25, 9, 12, 7, 19, 5, 13, 9, 17, 2, 7, 5
+                ], [
+                    2, 3, 8, 7, 22, 16, 23, 7, 11, 5, 12, 5, 10, 4, 15, 2, 6, 2
+                ]];
+                var i = 0;
+                var series = [];
+                var x = new Date("11 Nov 2012").getTime();
+                while (i < count) {
+                    series.push([x, values[s][i]]);
+                    x += 86400000;
+                    i++;
+                }
+                console.log(series)
                 return series;
             }
 
         },
 
+
+
+
+
         mounted: function () {
-            //console.log("mounted function is called")
             let self = this
             var socket = io.connect('localhost:8050');
             socket.on('message_to_client', function (d) {
@@ -263,47 +265,26 @@
                 },
             )
             socket.on('plot_data_from_server', function (data) {
-                    console.log('this is the data to be plotted:')
-                    // console.log(data.data)
-                    // var dict = [];
-                    // dict = data.data['Close']
-                    for (var key in data.data){
-                        console.log(key, data.data[key])
-//                         for (var fuckthis in key){
-// console.log('hereee',fuckthis)
-//                         }
+                    console.log('inside mounted function socket.on')
+                    var parsedData = JSON.parse(data.data)
+                    this.plotdata =[]
+                    //console.log(parsedData)
+                    for (const [key, value] of Object.entries(parsedData)) {
+                        let date = new Date(key).getTime()
+                        this.plotdata.push([date, value['Actual or Pred Close']])
                     }
+                    console.log(this.plotdata)
 
-
-// axios.get(path).then(jsonfiles => {
-
-//           let results = jsonfiles.data
-//           let deptresult = results['DEPT']
-//           let hdthresult = results['HDTH']
-//           let datetimeresult = results['Date/Time']
-
-//           this.DEPT = JSON.parse(deptresult)
-//           this.HDTH = JSON.parse(hdthresult)
-//           this.datetime = JSON.parse(datetimeresult)
-//           var depths = [];
-//           var hdths = [];
-//           for (var i = 0; i < this.DEPT.length && i < this.HDTH.length; i++) {
-//             depths[i] = [(new Date(this.datetime[i])), this.DEPT[i]];
-//             hdths[i] = [(new Date(this.datetime[i])), this.HDTH[i]];
-//           }
-
-
-
-
-                    // for (var i = 0; i < this.channel.length; i++) {
-                    //     related_channel[i] = [(new Date(this.datetime_[i])), this.channel[i]];
-                    //   }
-                    //const obj = JSON.parse(data.data['Close']);
-                    //console.log(obj)
-
-                },
+                }.bind(this)
+                
             )
+            // this.plotdata = self.plotdata
+            // console.log('youre at the end of mounted block')
+            // console.log(this.plotdata)
+        },
 
-        }
+
+
     }
+    
 </script>

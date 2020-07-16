@@ -61,12 +61,19 @@ def get_form_data(d):
     historical_data_path = 'Data/EOG.csv'
 
     df = pd.read_csv(historical_data_path, usecols=['Date', 'Close'])
-    #df['Date'] = pd.to_datetime(df['Date'])
-    #df.set_index('Date', inplace=True)
+    df['Date'] = pd.to_datetime(df['Date'])
+    df.set_index('Date', inplace=True)
 
     df = predict_stock_price(df, projection_date, trained_model_path, lookback)
-    socketio.emit('plot_data_from_server', {'data': df.to_json()})
-    print('tried emitting following data: {}'.format(df))
+    df.index = df.index.astype(str)
+    #values = df.values.tolist()
+
+
+
+
+
+    socketio.emit('plot_data_from_server', {'data': df.to_json(orient='index')})
+    #print('tried emitting following data: {}'.format(df.to_json()))
 
 
 
