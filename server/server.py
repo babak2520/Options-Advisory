@@ -1,10 +1,15 @@
-from server.RunPretrainedModel import predict_stock_price
+from server.StockModules import stockDataPrep, stockLSTM, updateStockData, updateNetworks, \
+    loadNNFromFile, updatePredictions, optionStrategy
 import os
 from flask import Flask, render_template, request, url_for, jsonify, session
 import json
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import pandas as pd
+from pathlib import Path
+from pandas_datareader import data as web
+from datetime import date
+import time
 
 # create and configure the server
 server = Flask(__name__)
@@ -26,7 +31,32 @@ try:
 except OSError:
     print(OSError)
     pass
+################################ Core script
+AllStocks = ['XOM', 'CVX', 'COP', 'HAL', 'SLB', 'GE', 'GOOG', 'NFLX', 'C', 'DAL', 'AMZN', 'V']
+LoadfromFile = False ##ToDo this flag (if false) will retrain neural networks and save and load a new set of files.
+BDProjection = pd.tseries.offsets.BusinessDay(800)
+NNUpdateInt = 5
 
+if not LoadfromFile:
+    CloseNNDict = updateNetworks(AllStocks, response='Close_grad', BDinterval = 3)
+    VolatilityNNDict = updateNetworks(AllStocks, response='Volatility', BDinterval = 3)
+else:
+    CloseNNDict = loadNNFromFile(AllStocks, response='Close_grad')
+    VolatilityNNDict = loadNNFromFile(AllStocks, response='Volatility')
+
+ClosePredictionsDict, VolatilityPredictionsDict = {} , {}
+Counter = 0
+
+while True:
+    ClosePredictionsDict = updatePredictions(AllStocks, CloseNNDict, pd.to_datetime('today')+BDProjection, response = 'Close_grad')
+    VolatilityPredictionsDict = updatePredictions(AllStocks, VolatilityNNDict, pd.to_datetime('today')+BDProjection, response = 'Volatility')
+    time.sleep(60*60*24)
+    Counter+=1
+    if Counter == NNUpdateInt:
+        CloseNNDict = updateNetworks(AllStocks, response='Close')
+        VolatilityNNDict = updateNetworks(AllStocks, response='Volatility')
+        Counter = 0
+##############################
 
 @server.route('/index')
 def hello_flask():
@@ -53,16 +83,9 @@ def get_form_data(d):
     lookback = int(data['lookback'])
     stock = data['stock']
 
-    print("here is the passed data")
-    print(projection_date, lookback, stock)
-    trained_model_path = 'trained models/EOG.h5'
-    historical_data_path = 'Data/EOG.csv'
-    df = pd.read_csv(historical_data_path, usecols=['Date', 'Close'])
-    df['Date'] = pd.to_datetime(df['Date'])
-    df.set_index('Date', inplace=True)
-    df = predict_stock_price(df, projection_date, trained_model_path, lookback)
-    df.index = df.index.astype(str)
-    socketio.emit('plot_data_from_server', {'data': df.to_json(orient='index')})
+    socketio.emit('plot_data_from_server', {'data': ClosePredictionsDict['SLB'].to_json(orient='index')})
+
+
 
 
 if __name__ == ' __main__':

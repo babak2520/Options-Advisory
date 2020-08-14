@@ -35,7 +35,9 @@
                             date</span></label>
 
                         <date-pick type="date" ref="desired_projection_date" v-model="desired_projection_date"
-                                   :format="'MM/DD/YYYY'"></date-pick>
+                                    no-title
+                                    @input="showPicker = false"
+                                   :displayFormat="'MM/DD/YYYY'"></date-pick>
 
                         <v-text-field :rules="rules"
                                       label="Enter the lookback amount"
@@ -64,9 +66,9 @@
         </v-row>
     </v-main>
 </template>
-<style src="../assets/css/vueDatePick.css"></style>
-<style src="../assets/css/general.css"></style>
 
+<style src="../assets/css/general.css"></style>
+<style src="../assets/css/vueDatePick.css"></style>
 <script>
     const io = require('socket.io-client');
     import VueApexCharts from 'vue-apexcharts'
