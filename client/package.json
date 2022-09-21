@@ -18,7 +18,7 @@
     "vue-date-pick": "^1.4.1",
     "vue-datetime": "^1.0.0-beta.13",
     "vue-socket.io": "^3.0.9",
-    "vuetify": "^2.3.0",
+    "vuetify": "^2.6.10",
     "weekstart": "^1.0.1"
   },
   "devDependencies": {
